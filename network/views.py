@@ -4,11 +4,25 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import User, Post
 
 
 def index(request):
     return render(request, "network/index.html")
+
+
+def new_post(request):
+    if request.method == 'POST':
+        content = request.POST["content"]
+        if content:
+            user = User.objects.get(pk=request.user.id)
+            post = Post(content=content, user=user)
+            post.save()
+            return HttpResponseRedirect(reverse(index))
+        else:
+            return render(request, "network/index.html", {
+                "message": "Cannot submit blank post."
+            })
 
 
 def login_view(request):
