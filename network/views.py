@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.core.paginator import Paginator
 
-from .models import User, Post
+from .models import User, Post, Follow
 
 
 def index(request):
@@ -16,8 +16,8 @@ def index(request):
     posts_on_page = pagintator.get_page(page_number)
 
     return render(request, "network/index.html", {
-        'all_posts':all_posts,
-        'posts_on_page':posts_on_page
+        'all_posts': all_posts,
+        'posts_on_page': posts_on_page
     })
 
 
@@ -33,6 +33,57 @@ def new_post(request):
             return render(request, "network/index.html", {
                 "message": "Cannot submit blank post."
             })
+
+
+def profile(request, user_id):
+    user = User.objects.get(pk=user_id)
+    all_posts = Post.objects.filter(user=user).order_by("id").reverse()
+
+    pagintator = Paginator(all_posts, 10)
+    page_number = request.GET.get('page')
+    posts_on_page = pagintator.get_page(page_number)
+
+    following = Follow.objects.filter(user=user)
+    followers = Follow.objects.filter(user_followed=user)
+
+    try:
+        check_following = followers.filter(user=User.objects.get(pk=request.user.id))
+        if len(check_following) != 0:
+            is_following = True
+        else:
+            is_following = False
+    except:
+        is_following = False
+
+    return render(request, "network/profile.html", {
+        'all_posts': all_posts,
+        'posts_on_page': posts_on_page,
+        'username': user.username,
+        'following': following,
+        'followers': followers,
+        'is_following': is_following,
+        'user_profile': user
+    })
+
+
+def follow(request):
+    user_follow = request.POST["user_follow"]
+    current_user = User.objects.get(pk=request.user.id)
+    user_follow_data = User.objects.get(username=user_follow)
+    f = Follow(user=current_user, user_followed=user_follow_data)
+    f.save()
+    user_id = user_follow_data.id
+    return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
+
+
+def unfollow(request):
+    user_follow = request.POST["user_follow"]
+    current_user = User.objects.get(pk=request.user.id)
+    user_follow_data = User.objects.get(username=user_follow)
+    f = Follow.objects.get(user=current_user, user_followed=user_follow_data)
+    f.delete()
+    user_id = user_follow_data.id
+    return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
 
 
 def login_view(request):
