@@ -16,6 +16,20 @@
         </div>
     {% endif %}
 
+    <div class="all_posts">
+        {% for post in all_posts %}
+            <div class="card my-3 mx-4">
+              <div class="card-header" style="font-weight: bold; font-size: 18px;">
+                {{ post.user }}
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item" style="font-size: 16px;">{{ post.content }}</li>
+                <li class="list-group-item" style="font-size: 12px;">Posted on: {{ post.date }}</li>
+              </ul>
+            </div>
+        {% endfor %}
+    </div>
+
     {% if message %}
         <div class="alert alert-danger my-3 mx-4" role="alert">{{ message }}</div>
     {% endif %}

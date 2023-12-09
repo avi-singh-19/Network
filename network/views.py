@@ -8,7 +8,10 @@ from .models import User, Post
 
 
 def index(request):
-    return render(request, "network/index.html")
+    all_posts = Post.objects.all().order_by("id").reverse()
+    return render(request, "network/index.html", {
+        'all_posts':all_posts
+    })
 
 
 def new_post(request):
