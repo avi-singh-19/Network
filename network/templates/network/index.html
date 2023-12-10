@@ -30,6 +30,11 @@
                 <li class="list-group-item" style="font-size: 12px;">Posted on: {{ post.date }}</li>
               </ul>
             </div>
+            {% if user.is_authenticated %}
+                {% if user == post.user %}
+                    <p>edit</p>
+                {% endif %}
+            {% endif %}
         {% endfor %}
     </div>
 
