@@ -21,7 +21,9 @@
         {% for post in posts_on_page %}
             <div class="card my-3 mx-4">
               <div class="card-header" style="font-weight: bold; font-size: 18px;">
-                {{ post.user }}
+                <a href="{% url 'profile' user_id=post.user.id %}">
+                    {{ post.user }}
+                </a>
               </div>
               <ul class="list-group list-group-flush">
                 <li class="list-group-item" style="font-size: 16px;">{{ post.content }}</li>
