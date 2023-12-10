@@ -86,6 +86,26 @@ def unfollow(request):
     return HttpResponseRedirect(reverse(profile, kwargs={'user_id': user_id}))
 
 
+def following(request):
+    current_user = User.objects.get(pk=request.user.id)
+    users_following = Follow.objects.filter(user=current_user)
+    all_posts = Post.objects.all().order_by("id").reverse()
+    posts_from_following = []
+
+    for post in all_posts:
+        for user in users_following:
+            if user.user_followed == post.user:
+                posts_from_following.append(post)
+
+    pagintator = Paginator(posts_from_following, 10)
+    page_number = request.GET.get('page')
+    posts_on_page = pagintator.get_page(page_number)
+
+    return render(request, "network/following.html", {
+        'all_posts': all_posts,
+        'posts_on_page': posts_on_page
+    })
+
 def login_view(request):
     if request.method == "POST":
 
