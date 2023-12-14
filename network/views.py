@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.core.paginator import Paginator
 import json
 from django.http import JsonResponse
-from .models import User, Post, Follow
+from .models import User, Post, Follow, Like
 
 
 def index(request):
@@ -16,9 +16,19 @@ def index(request):
     page_number = request.GET.get('page')
     posts_on_page = pagintator.get_page(page_number)
 
+    all_likes = Like.objects.all()
+    posts_liked = []
+    try:
+        for like in all_likes:
+            if like.user.id == request.user.id:
+                posts_liked.append(like.post.id)
+    except:
+        posts_liked = []
+
     return render(request, "network/index.html", {
         'all_posts': all_posts,
-        'posts_on_page': posts_on_page
+        'posts_on_page': posts_on_page,
+        'posts_liked': posts_liked
     })
 
 
@@ -98,13 +108,23 @@ def following(request):
             if user.user_followed == post.user:
                 posts_from_following.append(post)
 
+    all_likes = Like.objects.all()
+    posts_liked = []
+    try:
+        for like in all_likes:
+            if like.user.id == request.user.id:
+                posts_liked.append(like.post.id)
+    except:
+        posts_liked = []
+
     pagintator = Paginator(posts_from_following, 10)
     page_number = request.GET.get('page')
     posts_on_page = pagintator.get_page(page_number)
 
     return render(request, "network/following.html", {
         'all_posts': all_posts,
-        'posts_on_page': posts_on_page
+        'posts_on_page': posts_on_page,
+        'posts_liked': posts_liked
     })
 
 
@@ -115,6 +135,22 @@ def edit(request, post_id):
         edit_post.content = data["content"]
         edit_post.save()
         return JsonResponse({"message": "Change successful", "data": data["content"]})
+
+
+def unlike(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    user = User.objects.get(pk=request.user.id)
+    like = Like.objects.filter(user=user, post=post)
+    like.delete()
+    return JsonResponse({"message": "Like deleted"})
+
+
+def like(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    user = User.objects.get(pk=request.user.id)
+    new_like = Like(user=user, post=post)
+    new_like.save()
+    return JsonResponse({"message": "Like added"})
 
 
 def login_view(request):

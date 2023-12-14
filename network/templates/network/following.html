@@ -1,6 +1,40 @@
 {% extends "network/layout.html" %}
 
 {% block body %}
+    <script>
+        function like_handler(id, post_liked){
+            const button = document.getElementById(`${id}`);
+
+            button.classList.remove('fa-thumbs-down');
+            button.classList.remove('fa-heart');
+
+            console.log(id)
+
+            if(post_liked.indexOf(id) >= 0){
+                var liked = true;
+            } else {
+                var liked = false;
+            }
+
+            if(liked === true){
+                fetch(`/unlike/${id}`)
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+                    button.classList.add('fa-heart');
+                })
+            } else {
+                fetch(`/like/${id}`)
+                .then(response => response.json())
+                .then(result => {
+                    console.log(result);
+                    button.classList.add('fa-thumbs-down');
+                })
+            }
+            liked = !liked
+        }
+    </script>
+
     <h1 class="my-2 mx-3">Posts From Following</h1>
 
     <div class="all_posts">
@@ -15,6 +49,15 @@
                 <li class="list-group-item" style="font-size: 16px;">{{ post.content }}</li>
                 <li class="list-group-item" style="font-size: 12px;">Posted on: {{ post.date }}</li>
               </ul>
+            {% if post.id in posts_liked %}
+                <div class="my-3 mx-3">
+                    <button class="btn btn-info fa fa-thumbs-down" id="{{ post.id }}" style="font-size:14px; color:black" onclick="like_handler('{{ post.id }}', '{{ posts_liked }}')"></button>
+                </div>
+            {% else %}
+                <div class="my-3 mx-3">
+                    <button class="btn btn-info fa fa-heart" id="{{ post.id }}" style="font-size:14px; color:black" onclick="like_handler('{{ post.id }}', '{{ posts_liked }}')"></button>
+                </div>
+            {% endif %}
             </div>
         {% endfor %}
     </div>
