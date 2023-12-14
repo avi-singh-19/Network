@@ -4,7 +4,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.core.paginator import Paginator
-
+import json
+from django.http import JsonResponse
 from .models import User, Post, Follow
 
 
@@ -105,6 +106,16 @@ def following(request):
         'all_posts': all_posts,
         'posts_on_page': posts_on_page
     })
+
+
+def edit(request, post_id):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        edit_post = Post.objects.get(pk=post_id)
+        edit_post.content = data["content"]
+        edit_post.save()
+        return JsonResponse({"message": "Change successful", "data": data["content"]})
+
 
 def login_view(request):
     if request.method == "POST":
